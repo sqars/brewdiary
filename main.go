@@ -13,11 +13,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	a, err := app.NewApp(conf)
+	a := app.NewApp(conf)
 	defer a.DB.Close()
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	err = a.Run()
 	if err != nil {

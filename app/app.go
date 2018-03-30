@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"log"
+	"net/http"
 
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
@@ -22,20 +23,22 @@ type App struct {
 
 // NewApp is function constructor for main Application Object.
 // Method returns created application object with passed config.
-func NewApp(conf *config.Config) (*App, error) {
+func NewApp(conf *config.Config) *App {
 	app := &App{}
 	app.Config = conf
-	err := app.Init()
-	if err != nil {
-		return nil, err
-	}
-	return app, nil
+	app.Init()
+	return app
 }
 
 // Init method initialize application using config.
 // Method establish connection with database and
 // register app routes.
-func (a *App) Init() error {
+func (a *App) Init() {
+	a.connectDB()
+	a.registerRoutes()
+}
+
+func (a *App) connectDB() {
 	connDetails := fmt.Sprintf(
 		"host=%s port=%s user=%s dbname=%s password=%s",
 		a.Config.DbHost,
@@ -46,14 +49,22 @@ func (a *App) Init() error {
 	)
 	db, err := gorm.Open("postgres", connDetails)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 	a.DB = db
-	return nil
+}
+
+func (a *App) registerRoutes() {
+	r := mux.NewRouter()
+	a.Router = r
 }
 
 // Run starts application server
 func (a *App) Run() error {
-	log.Print("Starting server on:", a.Config.Host)
-	return nil
+	srv := &http.Server{
+		Handler: a.Router,
+		Addr:    a.Config.Host,
+	}
+	log.Print("Starting web server on addres: ", a.Config.Host)
+	return srv.ListenAndServe()
 }
