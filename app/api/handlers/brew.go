@@ -1,19 +1,16 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
+	"strconv"
+
+	"github.com/gorilla/mux"
 
 	"github.com/jinzhu/gorm"
 
 	"github.com/sqars/brewdiary/app/models"
 	"github.com/sqars/brewdiary/app/utils"
 )
-
-func decodeRequest(r *http.Request, v interface{}) error {
-	decoder := json.NewDecoder(r.Body)
-	return decoder.Decode(&v)
-}
 
 // NewBrewHandler is function constructor for Brew Handler
 func NewBrewHandler(db *gorm.DB) *BrewHandler {
@@ -30,7 +27,7 @@ type BrewHandler struct {
 func (b *BrewHandler) AddBrew(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	brew := models.Brew{}
-	err := decodeRequest(r, &brew)
+	err := utils.DecodeJSON(r, &brew)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
@@ -40,6 +37,20 @@ func (b *BrewHandler) AddBrew(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
+}
+
+// GetBrew returns brew for specified id
+func (b *BrewHandler) GetBrew(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+	}
+	brew := models.Brew{}
+	if err := b.DB.Find(&brew, id).Error; err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	utils.ResponseJSON(w, http.StatusOK, brew)
 }
 
 // GetBrews returns all brews from database

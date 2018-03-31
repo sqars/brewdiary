@@ -13,3 +13,9 @@ func ResponseJSON(w http.ResponseWriter, status int, payload interface{}) {
 		json.NewEncoder(w).Encode(payload)
 	}
 }
+
+// DecodeJSON decodes JSON request
+func DecodeJSON(r *http.Request, v interface{}) error {
+	decoder := json.NewDecoder(r.Body)
+	return decoder.Decode(&v)
+}

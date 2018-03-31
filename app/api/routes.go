@@ -11,10 +11,11 @@ import (
 func Init(db *gorm.DB) *mux.Router {
 	brewHandler := handlers.NewBrewHandler(db)
 	r := mux.NewRouter()
-	s := r.PathPrefix("/brew").Subrouter()
 
-	s.Methods("POST").HandlerFunc(brewHandler.AddBrew)
-	s.Methods("GET").HandlerFunc(brewHandler.GetBrews)
+	// brew specific routes
+	r.HandleFunc("/brew", brewHandler.GetBrews).Methods("GET")
+	r.HandleFunc("/brew/{id:[0-9]+}", brewHandler.GetBrew).Methods("GET")
+	r.HandleFunc("/brew/", brewHandler.AddBrew).Methods("POST")
 
 	return r
 }
