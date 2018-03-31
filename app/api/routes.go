@@ -14,6 +14,7 @@ func Init(db *gorm.DB) *mux.Router {
 	s := r.PathPrefix("/brew").Subrouter()
 
 	s.Methods("POST").HandlerFunc(brewHandler.AddBrew)
+	s.Methods("GET").HandlerFunc(brewHandler.GetBrews)
 
 	return r
 }
