@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 
+	"github.com/sqars/brewdiary/app/api"
 	"github.com/sqars/brewdiary/config"
 
 	// GORM drivers
@@ -35,7 +36,7 @@ func NewApp(conf *config.Config) *App {
 // register app routes.
 func (a *App) Init() {
 	a.connectDB()
-	a.registerRoutes()
+	a.initAPI()
 }
 
 func (a *App) connectDB() {
@@ -54,8 +55,8 @@ func (a *App) connectDB() {
 	a.DB = db
 }
 
-func (a *App) registerRoutes() {
-	r := mux.NewRouter()
+func (a *App) initAPI() {
+	r := api.Init(a.DB)
 	a.Router = r
 }
 
