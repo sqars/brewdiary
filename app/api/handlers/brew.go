@@ -14,7 +14,7 @@ import (
 
 // NewBrewHandler is function constructor for Brew Handler
 func NewBrewHandler(db *gorm.DB) *BrewHandler {
-	db.DropTableIfExists(&models.Brew{}, &models.Composition{})
+	// db.DropTableIfExists(&models.Brew{}, &models.Composition{})
 	db.AutoMigrate(&models.Brew{}, &models.Composition{})
 	return &BrewHandler{DB: db}
 }
@@ -51,6 +51,9 @@ func (b *BrewHandler) GetBrew(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
+	ingridients := []models.Composition{}
+	b.DB.Where("brew_id = ?", id).Preload("Ingridient").Find(&ingridients)
+	brew.Ingridients = ingridients
 	utils.ResponseJSON(w, http.StatusOK, brew)
 }
 
@@ -60,6 +63,11 @@ func (b *BrewHandler) GetBrews(w http.ResponseWriter, r *http.Request) {
 	if err := b.DB.Find(&brews).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
+	}
+	for i := range brews {
+		ingridients := []models.Composition{}
+		b.DB.Where("brew_id = ?", brews[i].ID).Preload("Ingridient").Find(&ingridients)
+		brews[i].Ingridients = ingridients
 	}
 	utils.ResponseJSON(w, http.StatusOK, brews)
 }
@@ -107,7 +115,7 @@ func (b *BrewHandler) DeleteBrew(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-type addIngridientRequest struct {
+type ingridientRequest struct {
 	Quantity     int
 	IngridientID uint `json:"id"`
 }
@@ -119,7 +127,7 @@ func (b *BrewHandler) AddIngridient(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
-	reqData := addIngridientRequest{}
+	reqData := ingridientRequest{}
 	err = utils.DecodeJSON(r, &reqData)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
@@ -141,11 +149,26 @@ func (b *BrewHandler) AddIngridient(w http.ResponseWriter, r *http.Request) {
 	}
 	ingridients := []models.Composition{}
 	b.DB.Where("brew_id = ?", id).Preload("Ingridient").Find(&ingridients)
-
 	brew.Ingridients = append(ingridients, composition)
 	if err := b.DB.Save(&brew).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
 	utils.ResponseJSON(w, http.StatusOK, b.DB.Model(&brew).Related(&models.Composition{}).Value)
+}
+
+// DeleteIngridient removes ingridient from brew
+func (b *BrewHandler) DeleteIngridient(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		return
+	}
+	reqData := ingridientRequest{}
+	err = utils.DecodeJSON(r, &reqData)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		return
+	}
+	b.DB.Where("id = ? AND brew_id = ?", reqData.IngridientID, id).Delete(&models.Composition{})
 }
