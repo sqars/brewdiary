@@ -14,7 +14,8 @@ import (
 
 // NewBrewHandler is function constructor for Brew Handler
 func NewBrewHandler(db *gorm.DB) *BrewHandler {
-	db.AutoMigrate(&models.Brew{})
+	db.DropTableIfExists(&models.Brew{}, &models.Composition{})
+	db.AutoMigrate(&models.Brew{}, &models.Composition{})
 	return &BrewHandler{DB: db}
 }
 
@@ -104,4 +105,47 @@ func (b *BrewHandler) DeleteBrew(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+}
+
+type addIngridientRequest struct {
+	Quantity     int
+	IngridientID uint `json:"id"`
+}
+
+// AddIngridient adds Ingridient into brew Ingridients
+func (b *BrewHandler) AddIngridient(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		return
+	}
+	reqData := addIngridientRequest{}
+	err = utils.DecodeJSON(r, &reqData)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		return
+	}
+	ingridient := models.Ingridient{}
+	if err := b.DB.Find(&ingridient, reqData.IngridientID).Error; err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	brew := models.Brew{}
+	if err := b.DB.First(&brew, id).Error; err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	composition := models.Composition{
+		Quantity:   reqData.Quantity,
+		Ingridient: ingridient,
+	}
+	ingridients := []models.Composition{}
+	b.DB.Where("brew_id = ?", id).Preload("Ingridient").Find(&ingridients)
+
+	brew.Ingridients = append(ingridients, composition)
+	if err := b.DB.Save(&brew).Error; err != nil {
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		return
+	}
+	utils.ResponseJSON(w, http.StatusOK, b.DB.Model(&brew).Related(&models.Composition{}).Value)
 }
