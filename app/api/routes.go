@@ -16,6 +16,8 @@ func Init(db *gorm.DB) *mux.Router {
 	r.HandleFunc("/brew", brewHandler.GetBrews).Methods("GET")
 	r.HandleFunc("/brew/{id:[0-9]+}", brewHandler.GetBrew).Methods("GET")
 	r.HandleFunc("/brew/", brewHandler.AddBrew).Methods("POST")
+	r.HandleFunc("/brew/{id:[0-9]+}", brewHandler.DeleteBrew).Methods("DELETE")
+	r.HandleFunc("/brew/{id:[0-9]+}", brewHandler.UpdateBrew).Methods("PUT")
 
 	return r
 }
