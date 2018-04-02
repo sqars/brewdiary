@@ -164,11 +164,15 @@ func (b *BrewHandler) DeleteIngridient(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
-	reqData := ingridientRequest{}
-	err = utils.DecodeJSON(r, &reqData)
+	cid, err := strconv.Atoi(mux.Vars(r)["cid"])
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
-	b.DB.Where("id = ? AND brew_id = ?", reqData.IngridientID, id).Delete(&models.Composition{})
+	b.DB.Where("id = ? AND brew_id = ?", cid, id).Delete(&models.Composition{})
+	if err = b.DB.Error; err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
