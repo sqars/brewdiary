@@ -4,5 +4,6 @@
     "database-name": "brewdiary",
     "database-user": "postgres",
     "database-password": "postgres",
-    "application-host": "localhost:8080"
+    "application-host": "localhost:4200",
+    "cors": ["http://localhost:8080"]
 }

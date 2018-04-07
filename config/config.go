@@ -7,12 +7,13 @@ import (
 
 // Config - struct for application configuration data
 type Config struct {
-	DbHost     string `json:"database-host"`
-	DbPort     string `json:"database-port"`
-	DbName     string `json:"database-name"`
-	DbUser     string `json:"database-user"`
-	DbPassword string `json:"database-password"`
-	Host       string `json:"application-host"`
+	DbHost     string   `json:"database-host"`
+	DbPort     string   `json:"database-port"`
+	DbName     string   `json:"database-name"`
+	DbUser     string   `json:"database-user"`
+	DbPassword string   `json:"database-password"`
+	Host       string   `json:"application-host"`
+	Cors       []string `json:"cors"`
 }
 
 // GetConfig returs pointer to Config

@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 
@@ -62,10 +63,7 @@ func (a *App) initAPI() {
 
 // Run starts application server
 func (a *App) Run() error {
-	srv := &http.Server{
-		Handler: a.Router,
-		Addr:    a.Config.Host,
-	}
+	cors := handlers.AllowedOrigins(a.Config.Cors)
 	log.Print("Starting web server on addres: ", a.Config.Host)
-	return srv.ListenAndServe()
+	return http.ListenAndServe(a.Config.Host, handlers.CORS(cors)(a.Router))
 }
