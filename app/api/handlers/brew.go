@@ -14,7 +14,7 @@ import (
 
 // NewBrewHandler is function constructor for Brew Handler
 func NewBrewHandler(db *gorm.DB) *BrewHandler {
-	// db.DropTableIfExists(&models.Brew{}, &models.Composition{})
+	db.DropTableIfExists(&models.Brew{}, &models.Composition{})
 	db.AutoMigrate(&models.Brew{}, &models.Composition{})
 	return &BrewHandler{DB: db}
 }

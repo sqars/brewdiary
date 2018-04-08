@@ -63,7 +63,16 @@ func (a *App) initAPI() {
 
 // Run starts application server
 func (a *App) Run() error {
-	cors := handlers.AllowedOrigins(a.Config.Cors)
+	allowedOrigins := handlers.AllowedOrigins(a.Config.Cors)
+	allowedMethods := handlers.AllowedMethods([]string{
+		"POST", "PUT", "GET", "DELETE",
+	})
+	allowedHeaders := handlers.AllowedHeaders([]string{
+		"Content-Type",
+	})
 	log.Print("Starting web server on addres: ", a.Config.Host)
-	return http.ListenAndServe(a.Config.Host, handlers.CORS(cors)(a.Router))
+	return http.ListenAndServe(
+		a.Config.Host,
+		handlers.CORS(allowedMethods, allowedOrigins, allowedHeaders)(a.Router),
+	)
 }

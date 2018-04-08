@@ -10,7 +10,7 @@ type Brew struct {
 	CreatedAt   time.Time     `json:"createdAt"`
 	UpdatedAt   time.Time     `json:"updatedAt"`
 	Name        string        `json:"name" gorm:"UNIQUE;NOT NULL"`
-	Num         int           `json:"num" gorm:"AUTO_INCREMENT;UNIQUE;NOT NULL"`
+	Num         int           `json:"num,string" gorm:"AUTO_INCREMENT;UNIQUE;NOT NULL"`
 	Location    string        `json:"location"`
 	Comments    string        `json:"comments"`
 	Ingridients []Composition `json:"ingridients"`
