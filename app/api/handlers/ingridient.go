@@ -84,19 +84,21 @@ func (i *IngridientHandler) UpdateIngridient(w http.ResponseWriter, r *http.Requ
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
+	tx := i.DB.Begin()
 	ingridient := models.Ingridient{}
-	if err := i.DB.First(&ingridient, id).Error; err != nil {
+	if err := tx.First(&ingridient, id).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 	ingridient.Comments = ingridientPUT.Comments
 	ingridient.Type = ingridientPUT.Type
 	ingridient.Name = ingridientPUT.Name
-	if err = i.DB.Save(&ingridient).Error; err != nil {
+	if err = tx.Save(&ingridient).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
 	utils.ResponseJSON(w, http.StatusOK, ingridient)
+	tx.Commit()
 }
 
 // DeleteIngridient deletes ingridient with specified id

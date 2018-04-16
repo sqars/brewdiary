@@ -59,14 +59,15 @@ func (b *BrewHandler) GetBrew(w http.ResponseWriter, r *http.Request) {
 
 // GetBrews returns all brews from database
 func (b *BrewHandler) GetBrews(w http.ResponseWriter, r *http.Request) {
+	tx := b.DB.Begin()
 	var brews []models.Brew
-	if err := b.DB.Find(&brews).Error; err != nil {
+	if err := tx.Find(&brews).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 	for i := range brews {
 		ingridients := []models.Composition{}
-		b.DB.Where("brew_id = ?", brews[i].ID).Preload("Ingridient").Find(&ingridients)
+		tx.Where("brew_id = ?", brews[i].ID).Preload("Ingridient").Find(&ingridients)
 		brews[i].Ingridients = ingridients
 	}
 	utils.ResponseJSON(w, http.StatusOK, brews)
@@ -85,19 +86,22 @@ func (b *BrewHandler) UpdateBrew(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
+	tx := b.DB.Begin()
 	brew := models.Brew{}
-	if err := b.DB.First(&brew, id).Error; err != nil {
+	if err := tx.First(&brew, id).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 	brew.Name = brewPUT.Name
 	brew.Num = brewPUT.Num
 	brew.Comments = brewPUT.Comments
-	if err := b.DB.Save(&brew).Error; err != nil {
+	brew.Location = brewPUT.Location
+	if err := tx.Save(&brew).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
 	utils.ResponseJSON(w, http.StatusOK, brew)
+	tx.Commit()
 }
 
 // DeleteBrew deletes brew with specified id
@@ -133,13 +137,14 @@ func (b *BrewHandler) AddIngridient(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
+	tx := b.DB.Begin()
 	ingridient := models.Ingridient{}
-	if err := b.DB.Find(&ingridient, reqData.IngridientID).Error; err != nil {
+	if err := tx.Find(&ingridient, reqData.IngridientID).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 	brew := models.Brew{}
-	if err := b.DB.First(&brew, id).Error; err != nil {
+	if err := tx.First(&brew, id).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
@@ -148,13 +153,14 @@ func (b *BrewHandler) AddIngridient(w http.ResponseWriter, r *http.Request) {
 		Ingridient: ingridient,
 	}
 	ingridients := []models.Composition{}
-	b.DB.Where("brew_id = ?", id).Preload("Ingridient").Find(&ingridients)
+	tx.Where("brew_id = ?", id).Preload("Ingridient").Find(&ingridients)
 	brew.Ingridients = append(ingridients, composition)
-	if err := b.DB.Save(&brew).Error; err != nil {
+	if err := tx.Save(&brew).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
-	utils.ResponseJSON(w, http.StatusOK, b.DB.Model(&brew).Related(&models.Composition{}).Value)
+	utils.ResponseJSON(w, http.StatusOK, tx.Model(&brew).Related(&models.Composition{}).Value)
+	tx.Commit()
 }
 
 // DeleteIngridient removes ingridient from brew

@@ -18,14 +18,14 @@ import (
 
 // App struct is entry point of application
 type App struct {
-	Config *config.Config
+	Config config.Config
 	DB     *gorm.DB
 	Router *mux.Router
 }
 
 // NewApp is function constructor for main Application Object.
 // Method returns created application object with passed config.
-func NewApp(conf *config.Config) *App {
+func NewApp(conf config.Config) *App {
 	app := &App{}
 	app.Config = conf
 	app.Init()

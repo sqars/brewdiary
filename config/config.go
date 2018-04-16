@@ -17,16 +17,16 @@ type Config struct {
 }
 
 // GetConfig returs pointer to Config
-func GetConfig() (*Config, error) {
+func GetConfig() (Config, error) {
 	var conf Config
 	file, err := os.Open("config/config.json")
 	if err != nil {
-		return nil, err
+		return conf, err
 	}
 	decoder := json.NewDecoder(file)
 	err = decoder.Decode(&conf)
 	if err != nil {
-		return nil, err
+		return conf, err
 	}
-	return &conf, nil
+	return conf, nil
 }
