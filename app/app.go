@@ -65,7 +65,7 @@ func (a *App) initAPI() {
 func (a *App) Run() error {
 	allowedOrigins := handlers.AllowedOrigins(a.Config.Cors)
 	allowedMethods := handlers.AllowedMethods([]string{
-		"POST", "PUT", "GET", "DELETE",
+		"POST", "PUT", "GET", "DELETE", "PATCH",
 	})
 	allowedHeaders := handlers.AllowedHeaders([]string{
 		"Content-Type",

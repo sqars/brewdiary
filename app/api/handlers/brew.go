@@ -9,7 +9,6 @@ import (
 	"github.com/jinzhu/gorm"
 
 	"github.com/sqars/brewdiary/app/models"
-	"github.com/sqars/brewdiary/app/utils"
 )
 
 // NewBrewHandler is function constructor for Brew Handler
@@ -27,7 +26,7 @@ type BrewHandler struct {
 // AddBrew adds Brew into database
 func (b *BrewHandler) AddBrew(w http.ResponseWriter, r *http.Request) {
 	brew := models.Brew{}
-	err := utils.DecodeJSON(r, &brew)
+	err := decodeJSON(r, &brew)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
@@ -54,7 +53,7 @@ func (b *BrewHandler) GetBrew(w http.ResponseWriter, r *http.Request) {
 	ingridients := []models.Composition{}
 	b.DB.Where("brew_id = ?", id).Preload("Ingridient").Find(&ingridients)
 	brew.Ingridients = ingridients
-	utils.ResponseJSON(w, http.StatusOK, brew)
+	responseJSON(w, http.StatusOK, brew)
 }
 
 // GetBrews returns all brews from database
@@ -70,7 +69,7 @@ func (b *BrewHandler) GetBrews(w http.ResponseWriter, r *http.Request) {
 		tx.Where("brew_id = ?", brews[i].ID).Preload("Ingridient").Find(&ingridients)
 		brews[i].Ingridients = ingridients
 	}
-	utils.ResponseJSON(w, http.StatusOK, brews)
+	responseJSON(w, http.StatusOK, brews)
 }
 
 // UpdateBrew updates brew with specified id
@@ -81,7 +80,7 @@ func (b *BrewHandler) UpdateBrew(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	brewPUT := models.Brew{}
-	err = utils.DecodeJSON(r, &brewPUT)
+	err = decodeJSON(r, &brewPUT)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
@@ -93,14 +92,13 @@ func (b *BrewHandler) UpdateBrew(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	brew.Name = brewPUT.Name
-	brew.Num = brewPUT.Num
 	brew.Comments = brewPUT.Comments
 	brew.Location = brewPUT.Location
 	if err := tx.Save(&brew).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
-	utils.ResponseJSON(w, http.StatusOK, brew)
+	responseJSON(w, http.StatusOK, brew)
 	tx.Commit()
 }
 
@@ -119,11 +117,6 @@ func (b *BrewHandler) DeleteBrew(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-type ingridientRequest struct {
-	Quantity     int
-	IngridientID uint `json:"id"`
-}
-
 // AddIngridient adds Ingridient into brew Ingridients
 func (b *BrewHandler) AddIngridient(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(mux.Vars(r)["id"])
@@ -132,7 +125,7 @@ func (b *BrewHandler) AddIngridient(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	reqData := ingridientRequest{}
-	err = utils.DecodeJSON(r, &reqData)
+	err = decodeJSON(r, &reqData)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
@@ -159,7 +152,7 @@ func (b *BrewHandler) AddIngridient(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
-	utils.ResponseJSON(w, http.StatusOK, tx.Model(&brew).Related(&models.Composition{}).Value)
+	responseJSON(w, http.StatusOK, tx.Model(&brew).Related(&models.Composition{}).Value)
 	tx.Commit()
 }
 

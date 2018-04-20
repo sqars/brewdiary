@@ -18,7 +18,7 @@ func Init(db *gorm.DB) *mux.Router {
 	r.HandleFunc("/brew/{id:[0-9]+}", brewHandler.GetBrew).Methods("GET")
 	r.HandleFunc("/brew", brewHandler.AddBrew).Methods("PUT")
 	r.HandleFunc("/brew/{id:[0-9]+}", brewHandler.DeleteBrew).Methods("DELETE")
-	r.HandleFunc("/brew/{id:[0-9]+}", brewHandler.UpdateBrew).Methods("PUT")
+	r.HandleFunc("/brew/{id:[0-9]+}", brewHandler.UpdateBrew).Methods("PATCH")
 	r.HandleFunc("/brew/{id:[0-9]+}/ingridients", brewHandler.AddIngridient).Methods("PUT")
 	r.HandleFunc("/brew/{id:[0-9]+}/ingridients/{cid:[0-9]+}", brewHandler.DeleteIngridient).Methods("DELETE")
 
@@ -26,7 +26,7 @@ func Init(db *gorm.DB) *mux.Router {
 	r.HandleFunc("/ingridient", ingridientHandler.GetIngridients).Methods("GET")
 	r.HandleFunc("/ingridient/{id:[0-9]+}", ingridientHandler.GetIngridient).Methods("GET")
 	r.HandleFunc("/ingridient", ingridientHandler.AddIngridient).Methods("PUT")
-	r.HandleFunc("/ingridient/{id:[0-9]+}", ingridientHandler.UpdateIngridient).Methods("PUT")
+	r.HandleFunc("/ingridient/{id:[0-9]+}", ingridientHandler.UpdateIngridient).Methods("PATCH")
 	r.HandleFunc("/ingridient/{id:[0-9]+}", ingridientHandler.DeleteIngridient).Methods("DELETE")
 
 	return r

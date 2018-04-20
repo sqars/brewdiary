@@ -1,12 +1,17 @@
-package utils
+package handlers
 
 import (
 	"encoding/json"
 	"net/http"
 )
 
+type ingridientRequest struct {
+	Quantity     int
+	IngridientID uint `json:"id"`
+}
+
 // ResponseJSON returns response as JSON with passed payload
-func ResponseJSON(w http.ResponseWriter, status int, payload interface{}) {
+func responseJSON(w http.ResponseWriter, status int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	if payload != nil {
@@ -15,7 +20,7 @@ func ResponseJSON(w http.ResponseWriter, status int, payload interface{}) {
 }
 
 // DecodeJSON decodes JSON request
-func DecodeJSON(r *http.Request, v interface{}) error {
+func decodeJSON(r *http.Request, v interface{}) error {
 	decoder := json.NewDecoder(r.Body)
 	return decoder.Decode(&v)
 }

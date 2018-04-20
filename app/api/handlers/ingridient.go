@@ -7,7 +7,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	"github.com/sqars/brewdiary/app/models"
-	"github.com/sqars/brewdiary/app/utils"
 )
 
 // NewIngridientHandler is function constructor for IngridientHandler
@@ -25,7 +24,7 @@ type IngridientHandler struct {
 // AddIngridient adds ingridient into database
 func (i *IngridientHandler) AddIngridient(w http.ResponseWriter, r *http.Request) {
 	ingridient := models.Ingridient{}
-	err := utils.DecodeJSON(r, &ingridient)
+	err := decodeJSON(r, &ingridient)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
@@ -54,7 +53,7 @@ func (i *IngridientHandler) GetIngridient(w http.ResponseWriter, r *http.Request
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-	utils.ResponseJSON(w, http.StatusOK, ingridient)
+	responseJSON(w, http.StatusOK, ingridient)
 }
 
 // GetIngridients returns all ingridients from database
@@ -64,7 +63,7 @@ func (i *IngridientHandler) GetIngridients(w http.ResponseWriter, r *http.Reques
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-	utils.ResponseJSON(w, http.StatusOK, ingridients)
+	responseJSON(w, http.StatusOK, ingridients)
 }
 
 // UpdateIngridient update ingridient for specified id
@@ -75,7 +74,7 @@ func (i *IngridientHandler) UpdateIngridient(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	ingridientPUT := models.Ingridient{}
-	err = utils.DecodeJSON(r, &ingridientPUT)
+	err = decodeJSON(r, &ingridientPUT)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 	}
@@ -97,7 +96,7 @@ func (i *IngridientHandler) UpdateIngridient(w http.ResponseWriter, r *http.Requ
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
-	utils.ResponseJSON(w, http.StatusOK, ingridient)
+	responseJSON(w, http.StatusOK, ingridient)
 	tx.Commit()
 }
 
