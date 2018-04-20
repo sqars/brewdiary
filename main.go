@@ -6,6 +6,7 @@ import (
 
 	"github.com/sqars/brewdiary/app"
 	"github.com/sqars/brewdiary/config"
+	"github.com/sqars/brewdiary/logger"
 )
 
 func openOrCreateFile(path string) *os.File {
@@ -29,17 +30,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fHTTP := openOrCreateFile("logs/http.log")
-	defer fHTTP.Close()
+	f := openOrCreateFile("logs/http.log")
+	defer f.Close()
 
-	fDB := openOrCreateFile("logs/db.log")
-	defer fDB.Close()
-
-	a := app.NewApp(conf, fDB, fHTTP)
+	logger.Init(f)
+	a := app.NewApp(conf)
 	defer a.DB.Close()
 
 	err = a.Run()
 	if err != nil {
-		log.Fatal(err)
+		logger.Error.Println(err)
 	}
 }

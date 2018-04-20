@@ -6,5 +6,5 @@
     "database-password": "postgres",
     "application-host": "localhost:4200",
     "cors": ["http://localhost:8080"],
-    "debug": true
+    "debug": false
 }

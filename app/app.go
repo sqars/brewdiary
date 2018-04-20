@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/sqars/brewdiary/app/api"
 	"github.com/sqars/brewdiary/config"
+	"github.com/sqars/brewdiary/logger"
 
 	// GORM drivers
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -26,22 +26,22 @@ type App struct {
 
 // NewApp is function constructor for main Application Object.
 // Method returns created application object with passed config.
-func NewApp(conf config.Config, fDB *os.File, fHTTP *os.File) *App {
+func NewApp(conf config.Config) *App {
 	app := &App{}
 	app.Config = conf
-	app.Init(fDB, fHTTP)
+	app.Init()
 	return app
 }
 
 // Init method initialize application using config.
 // Method establish connection with database and
 // register app routes.
-func (a *App) Init(fDB *os.File, fHTTP *os.File) {
-	a.connectDB(fDB)
+func (a *App) Init() {
+	a.connectDB()
 	a.initAPI()
 }
 
-func (a *App) connectDB(logfile *os.File) {
+func (a *App) connectDB() {
 	connDetails := fmt.Sprintf(
 		"host=%s port=%s user=%s dbname=%s password=%s",
 		a.Config.DbHost,
@@ -56,8 +56,8 @@ func (a *App) connectDB(logfile *os.File) {
 	}
 	a.DB = db
 
-	a.DB.LogMode(true)
-	a.DB.SetLogger(log.New(logfile, "\r\n", 0))
+	a.DB.LogMode(a.Config.Debug)
+	a.DB.SetLogger(logger.DB)
 }
 
 func (a *App) initAPI() {
@@ -76,7 +76,9 @@ func (a *App) Run() error {
 		"Content-Type",
 	})
 
-	log.Print("Starting web server on addres: ", a.Config.Host)
+	logger.Info.Println("Starting web server on addres: ", a.Config.Host)
+	log.Println("Starting web server on addres: ", a.Config.Host)
+
 	return http.ListenAndServe(
 		a.Config.Host,
 		handlers.CORS(allowedMethods, allowedOrigins, allowedHeaders)(a.Router),
