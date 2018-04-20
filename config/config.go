@@ -14,6 +14,7 @@ type Config struct {
 	DbPassword string   `json:"database-password"`
 	Host       string   `json:"application-host"`
 	Cors       []string `json:"cors"`
+	Debug      bool     `json:"debug"`
 }
 
 // GetConfig returs pointer to Config

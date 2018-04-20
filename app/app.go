@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -25,22 +26,22 @@ type App struct {
 
 // NewApp is function constructor for main Application Object.
 // Method returns created application object with passed config.
-func NewApp(conf config.Config) *App {
+func NewApp(conf config.Config, fDB *os.File, fHTTP *os.File) *App {
 	app := &App{}
 	app.Config = conf
-	app.Init()
+	app.Init(fDB, fHTTP)
 	return app
 }
 
 // Init method initialize application using config.
 // Method establish connection with database and
 // register app routes.
-func (a *App) Init() {
-	a.connectDB()
+func (a *App) Init(fDB *os.File, fHTTP *os.File) {
+	a.connectDB(fDB)
 	a.initAPI()
 }
 
-func (a *App) connectDB() {
+func (a *App) connectDB(logfile *os.File) {
 	connDetails := fmt.Sprintf(
 		"host=%s port=%s user=%s dbname=%s password=%s",
 		a.Config.DbHost,
@@ -54,6 +55,9 @@ func (a *App) connectDB() {
 		log.Fatal(err)
 	}
 	a.DB = db
+
+	a.DB.LogMode(true)
+	a.DB.SetLogger(log.New(logfile, "\r\n", 0))
 }
 
 func (a *App) initAPI() {
@@ -63,6 +67,7 @@ func (a *App) initAPI() {
 
 // Run starts application server
 func (a *App) Run() error {
+	// CORS config
 	allowedOrigins := handlers.AllowedOrigins(a.Config.Cors)
 	allowedMethods := handlers.AllowedMethods([]string{
 		"POST", "PUT", "GET", "DELETE", "PATCH",
@@ -70,6 +75,7 @@ func (a *App) Run() error {
 	allowedHeaders := handlers.AllowedHeaders([]string{
 		"Content-Type",
 	})
+
 	log.Print("Starting web server on addres: ", a.Config.Host)
 	return http.ListenAndServe(
 		a.Config.Host,
