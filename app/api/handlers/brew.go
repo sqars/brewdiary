@@ -91,10 +91,7 @@ func (b *BrewHandler) UpdateBrew(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-	brew.Name = brewPUT.Name
-	brew.Comments = brewPUT.Comments
-	brew.Location = brewPUT.Location
-	if err := tx.Save(&brew).Error; err != nil {
+	if err := tx.Model(&brew).Updates(brewPUT).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}

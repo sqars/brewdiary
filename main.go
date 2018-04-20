@@ -2,27 +2,12 @@ package main
 
 import (
 	"log"
-	"os"
 
 	"github.com/sqars/brewdiary/app"
 	"github.com/sqars/brewdiary/config"
 	"github.com/sqars/brewdiary/logger"
+	"github.com/sqars/brewdiary/utils"
 )
-
-func openOrCreateFile(path string) *os.File {
-	if _, err := os.Stat(path); err == nil {
-		f, err := os.OpenFile(path, os.O_RDWR|os.O_APPEND, 0660)
-		if err != nil {
-			log.Fatal(err)
-		}
-		return f
-	}
-	f, err := os.Create(path)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return f
-}
 
 func main() {
 	conf, err := config.GetConfig()
@@ -30,7 +15,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	f := openOrCreateFile("logs/http.log")
+	f := utils.OpenOrCreateFile("logs/log.log")
 	defer f.Close()
 
 	logger.Init(f)

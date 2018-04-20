@@ -89,10 +89,7 @@ func (i *IngridientHandler) UpdateIngridient(w http.ResponseWriter, r *http.Requ
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-	ingridient.Comments = ingridientPUT.Comments
-	ingridient.Type = ingridientPUT.Type
-	ingridient.Name = ingridientPUT.Name
-	if err = tx.Save(&ingridient).Error; err != nil {
+	if err = tx.Model(&ingridient).Updates(ingridientPUT).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
