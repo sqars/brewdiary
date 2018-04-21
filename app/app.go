@@ -81,6 +81,6 @@ func (a *App) Run() error {
 
 	return http.ListenAndServe(
 		a.Config.Host,
-		handlers.CORS(allowedMethods, allowedOrigins, allowedHeaders)(a.Router),
+		logger.LogTraffic(handlers.CORS(allowedMethods, allowedOrigins, allowedHeaders)(a.Router)),
 	)
 }
