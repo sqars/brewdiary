@@ -15,7 +15,6 @@ import (
 func NewBrewHandler(db *gorm.DB) *BrewHandler {
 	// db.DropTableIfExists(&models.Brew{}, &models.Fermentation{}, &models.Composition{})
 	db.AutoMigrate(&models.Brew{}, &models.Composition{}, &models.Fermentation{})
-	db.Set("gorm:auto_preload", true).Find(&models.Brew{})
 	return &BrewHandler{DB: db}
 }
 
@@ -46,18 +45,20 @@ func (b *BrewHandler) GetBrew(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
+	tx := b.DB.Begin()
 	brew := models.Brew{}
-	if err := b.DB.Find(&brew, id).Error; err != nil {
+	if err := tx.Find(&brew, id).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 	ingridients := []models.Composition{}
 	fermentation := models.Fermentation{}
-	b.DB.Model(&brew).Preload("Ingridient").Find(&ingridients)
-	b.DB.Model(&brew).Related(&fermentation)
+	tx.Model(&brew).Preload("Ingridient").Find(&ingridients)
+	tx.Model(&brew).Related(&fermentation)
 	brew.Fermentation = fermentation
 	brew.Ingridients = ingridients
 	responseJSON(w, http.StatusOK, brew)
+	tx.Commit()
 }
 
 // GetBrews returns all brews from database
@@ -77,6 +78,7 @@ func (b *BrewHandler) GetBrews(w http.ResponseWriter, r *http.Request) {
 		brews[i].Ingridients = ingridients
 	}
 	responseJSON(w, http.StatusOK, brews)
+	tx.Commit()
 }
 
 // UpdateBrew updates brew with specified id
@@ -184,6 +186,43 @@ func (b *BrewHandler) AddFermentation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err = tx.Model(&brew).Association("Fermentation").Append(fermentation).Error; err != nil {
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		return
+	}
+	ingridients := []models.Composition{}
+	tx.Model(&brew).Preload("Ingridient").Find(&ingridients)
+	brew.Fermentation = fermentation
+	brew.Ingridients = ingridients
+	responseJSON(
+		w,
+		http.StatusOK,
+		brew,
+	)
+	tx.Commit()
+}
+
+// UpdateFermentation updates fermentation for Brew
+func (b *BrewHandler) UpdateFermentation(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		return
+	}
+	fermentationPUT := models.Fermentation{}
+	err = decodeJSON(r, &fermentationPUT)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		return
+	}
+	tx := b.DB.Begin()
+	brew := models.Brew{}
+	if err := tx.First(&brew, id).Error; err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	fermentation := models.Fermentation{}
+	tx.Model(&brew).Related(&fermentation)
+	if err := tx.Model(&fermentation).Updates(fermentationPUT).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
