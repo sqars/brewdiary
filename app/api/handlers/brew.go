@@ -13,7 +13,7 @@ import (
 
 // NewBrewHandler is function constructor for Brew Handler
 func NewBrewHandler(db *gorm.DB) *BrewHandler {
-	db.DropTableIfExists(&models.Brew{}, &models.Composition{})
+	// db.DropTableIfExists(&models.Brew{}, &models.Composition{})
 	db.AutoMigrate(&models.Brew{}, &models.Composition{})
 	return &BrewHandler{DB: db}
 }
@@ -142,14 +142,18 @@ func (b *BrewHandler) AddIngridient(w http.ResponseWriter, r *http.Request) {
 		Quantity:   reqData.Quantity,
 		Ingridient: ingridient,
 	}
-	ingridients := []models.Composition{}
-	tx.Where("brew_id = ?", id).Preload("Ingridient").Find(&ingridients)
-	brew.Ingridients = append(ingridients, composition)
-	if err := tx.Save(&brew).Error; err != nil {
+	if err := tx.Model(&brew).Association("Ingridients").Append(composition).Error; err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
-	responseJSON(w, http.StatusOK, tx.Model(&brew).Related(&models.Composition{}).Value)
+	ingridients := []models.Composition{}
+	tx.First(&brew, id).Preload("Ingridient").Find(&ingridients)
+	brew.Ingridients = ingridients
+	responseJSON(
+		w,
+		http.StatusOK,
+		brew,
+	)
 	tx.Commit()
 }
 

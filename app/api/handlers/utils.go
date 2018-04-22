@@ -6,7 +6,7 @@ import (
 )
 
 type ingridientRequest struct {
-	Quantity     int
+	Quantity     int  `json:"quantity"`
 	IngridientID uint `json:"id"`
 }
 
