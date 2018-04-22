@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-type ingridientRequest struct {
+type ingridientReq struct {
 	Quantity     int  `json:"quantity"`
 	IngridientID uint `json:"id"`
 }

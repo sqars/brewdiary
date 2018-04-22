@@ -13,8 +13,9 @@ import (
 
 // NewBrewHandler is function constructor for Brew Handler
 func NewBrewHandler(db *gorm.DB) *BrewHandler {
-	// db.DropTableIfExists(&models.Brew{}, &models.Composition{})
-	db.AutoMigrate(&models.Brew{}, &models.Composition{})
+	// db.DropTableIfExists(&models.Brew{}, &models.Fermentation{}, &models.Composition{})
+	db.AutoMigrate(&models.Brew{}, &models.Composition{}, &models.Fermentation{})
+	db.Set("gorm:auto_preload", true).Find(&models.Brew{})
 	return &BrewHandler{DB: db}
 }
 
@@ -51,7 +52,10 @@ func (b *BrewHandler) GetBrew(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ingridients := []models.Composition{}
-	b.DB.Where("brew_id = ?", id).Preload("Ingridient").Find(&ingridients)
+	fermentation := models.Fermentation{}
+	b.DB.Model(&brew).Preload("Ingridient").Find(&ingridients)
+	b.DB.Model(&brew).Related(&fermentation)
+	brew.Fermentation = fermentation
 	brew.Ingridients = ingridients
 	responseJSON(w, http.StatusOK, brew)
 }
@@ -66,7 +70,10 @@ func (b *BrewHandler) GetBrews(w http.ResponseWriter, r *http.Request) {
 	}
 	for i := range brews {
 		ingridients := []models.Composition{}
+		fermentation := models.Fermentation{}
 		tx.Where("brew_id = ?", brews[i].ID).Preload("Ingridient").Find(&ingridients)
+		tx.Model(&brews[i]).Related(&fermentation)
+		brews[i].Fermentation = fermentation
 		brews[i].Ingridients = ingridients
 	}
 	responseJSON(w, http.StatusOK, brews)
@@ -121,7 +128,7 @@ func (b *BrewHandler) AddIngridient(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
-	reqData := ingridientRequest{}
+	reqData := ingridientReq{}
 	err = decodeJSON(r, &reqData)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
@@ -148,6 +155,41 @@ func (b *BrewHandler) AddIngridient(w http.ResponseWriter, r *http.Request) {
 	}
 	ingridients := []models.Composition{}
 	tx.First(&brew, id).Preload("Ingridient").Find(&ingridients)
+	brew.Ingridients = ingridients
+	responseJSON(
+		w,
+		http.StatusOK,
+		brew,
+	)
+	tx.Commit()
+}
+
+// AddFermentation adds fermentation specific information to brew
+func (b *BrewHandler) AddFermentation(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		return
+	}
+	fermentation := models.Fermentation{}
+	err = decodeJSON(r, &fermentation)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		return
+	}
+	tx := b.DB.Begin()
+	brew := models.Brew{}
+	if err := tx.First(&brew, id).Error; err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	if err = tx.Model(&brew).Association("Fermentation").Append(fermentation).Error; err != nil {
+		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		return
+	}
+	ingridients := []models.Composition{}
+	tx.Model(&brew).Preload("Ingridient").Find(&ingridients)
+	brew.Fermentation = fermentation
 	brew.Ingridients = ingridients
 	responseJSON(
 		w,
