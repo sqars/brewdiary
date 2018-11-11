@@ -32,7 +32,7 @@ func (b *BrewHandler) AddBrew(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
 	}
-	err = brew.CreateBrew(b.DB)
+	err = brew.Create(b.DB)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
@@ -49,7 +49,7 @@ func (b *BrewHandler) GetBrew(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	brew := models.Brew{ID: id}
-	err = brew.GetBrew(b.DB)
+	err = brew.Get(b.DB)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -66,7 +66,7 @@ func (b *BrewHandler) DeleteBrew(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	brew := models.Brew{ID: id}
-	err = brew.DeleteBrew(b.DB)
+	err = brew.Delete(b.DB)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -90,12 +90,12 @@ func (b *BrewHandler) UpdateBrew(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	brew.ID = id
-	err = brew.UpdateBrew(b.DB)
+	err = brew.Update(b.DB)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-	err = brew.GetBrew(b.DB)
+	err = brew.Get(b.DB)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -108,7 +108,7 @@ func (b *BrewHandler) UpdateBrew(w http.ResponseWriter, r *http.Request) {
 func (b *BrewHandler) GetBrews(w http.ResponseWriter, r *http.Request) {
 	tx := b.DB.Begin()
 	brew := models.Brew{}
-	brews, err := brew.GetBrews(b.DB)
+	brews, err := brew.GetAll(b.DB)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

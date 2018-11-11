@@ -27,6 +27,7 @@ func TestMain(m *testing.M) {
 	a.Init()
 
 	clearBrewTable()
+	clearIngridientTable()
 	code := m.Run()
 
 	os.Exit(code)
@@ -52,4 +53,9 @@ func expectMsg(t *testing.T, expected, actual string) {
 func clearBrewTable() {
 	a.DB.DropTableIfExists(&models.Brew{})
 	a.DB.AutoMigrate(&models.Brew{})
+}
+
+func clearIngridientTable() {
+	a.DB.DropTableIfExists(&models.Ingridient{})
+	a.DB.AutoMigrate(&models.Ingridient{})
 }

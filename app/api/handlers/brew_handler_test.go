@@ -27,7 +27,7 @@ func addTestBrew(count int) {
 func TestBrewHandler_GetBrew(t *testing.T) {
 	type args struct {
 		url    string
-		userID int
+		brewID int
 	}
 	tests := []struct {
 		name     string
@@ -35,16 +35,16 @@ func TestBrewHandler_GetBrew(t *testing.T) {
 		wantCode int
 	}{
 		{
-			name: "Should return 404 if no User in db",
+			name: "Should return 404 if no Brew in db",
 			args: args{
 				url: "/brew/666",
 			},
 			wantCode: http.StatusNotFound,
 		}, {
-			name: "Should return 200 and User data",
+			name: "Should return 200 and Brew data",
 			args: args{
 				url:    "/brew/5",
-				userID: 5,
+				brewID: 5,
 			},
 			wantCode: http.StatusOK,
 		},
@@ -53,7 +53,7 @@ func TestBrewHandler_GetBrew(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			clearBrewTable()
 			if tt.wantCode == http.StatusOK {
-				addTestBrew(tt.args.userID + 1)
+				addTestBrew(tt.args.brewID + 1)
 			}
 			req, err := http.NewRequest("GET", tt.args.url, nil)
 			if err != nil {
@@ -68,9 +68,9 @@ func TestBrewHandler_GetBrew(t *testing.T) {
 				if err != nil {
 					t.Errorf("Cannot decode api response")
 				}
-				expectedName := "Brew" + strconv.Itoa(tt.args.userID)
-				expectedLocation := "Location" + strconv.Itoa(tt.args.userID)
-				expectedComments := "Comments" + strconv.Itoa(tt.args.userID)
+				expectedName := "Brew" + strconv.Itoa(tt.args.brewID)
+				expectedLocation := "Location" + strconv.Itoa(tt.args.brewID)
+				expectedComments := "Comments" + strconv.Itoa(tt.args.brewID)
 				if b.Name != expectedName {
 					expectMsg(t, expectedName, b.Name)
 				}
@@ -114,7 +114,7 @@ func TestBrewHandler_AddBrew(t *testing.T) {
 			},
 			wantCode: http.StatusUnprocessableEntity,
 		}, {
-			name: "Should return 201 if User was created with proper payload",
+			name: "Should return 201 if Brew was created with proper payload",
 			args: args{
 				payload: []byte(`{"name":"TestBrew","location":"TestLocation","comments":"TestComments"}`),
 			},
@@ -165,7 +165,7 @@ func TestBrewHandler_DeleteBrew(t *testing.T) {
 		args args
 	}{
 		{
-			name: "Should delete user from DB",
+			name: "Should delete brew from DB",
 			args: args{
 				url: "/brew/3",
 			},
@@ -217,7 +217,7 @@ func TestBrewHandler_UpdateBrew(t *testing.T) {
 			},
 			wantCode: http.StatusUnprocessableEntity,
 		}, {
-			name: "Should return 200 code and User data when updated",
+			name: "Should return 200 code and brew data when updated",
 			args: args{
 				url:     "/brew/3",
 				payload: []byte(`{"name": "NameUpdated","comments": "CommentsUpdated","location":"LocationUpdated"}`),
@@ -229,7 +229,7 @@ func TestBrewHandler_UpdateBrew(t *testing.T) {
 				Location: "LocationUpdated",
 			},
 		}, {
-			name: "Should return 200 code and User data with updated only 2 fields",
+			name: "Should return 200 code and brew data with updated only 2 fields",
 			args: args{
 				url:     "/brew/4",
 				payload: []byte(`{"comments": "CommentsUpdated","location":"LocationUpdated"}`),
