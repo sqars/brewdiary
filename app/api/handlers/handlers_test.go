@@ -4,9 +4,12 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"reflect"
 	"strconv"
 	"testing"
+	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/sqars/brewdiary/app"
 	"github.com/sqars/brewdiary/app/models"
 	"github.com/sqars/brewdiary/config"
@@ -119,5 +122,16 @@ func addTestIngridient(count int) {
 			Comments: "Comments" + strconv.Itoa(i+1),
 		}
 		a.DB.Create(&in)
+	}
+}
+
+func brewEquals(t *testing.T, bExp, bAct models.Brew) {
+	// we dont want to compare time fields
+	options := cmp.FilterValues(func(x, y interface{}) bool {
+		return reflect.TypeOf(x) == reflect.TypeOf(time.Time{}) || reflect.TypeOf(y) == reflect.TypeOf(time.Time{})
+	}, cmp.Ignore())
+	diff := cmp.Diff(bExp, bAct, options)
+	if diff != "" {
+		t.Errorf("Brews differ: (-want +got)\n%s", diff)
 	}
 }

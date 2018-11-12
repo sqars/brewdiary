@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
-	"strconv"
 	"testing"
 
 	"github.com/sqars/brewdiary/app/models"
@@ -20,6 +19,7 @@ func TestBrewHandler_GetBrew(t *testing.T) {
 		name     string
 		args     args
 		wantCode int
+		wantBrew models.Brew
 	}{
 		{
 			name: "Should return 404 if no Brew in db",
@@ -32,9 +32,37 @@ func TestBrewHandler_GetBrew(t *testing.T) {
 			args: args{
 				url:                "/brew/5",
 				brewID:             5,
-				howManyIngridients: 3,
+				howManyIngridients: 2,
 			},
 			wantCode: http.StatusOK,
+			wantBrew: models.Brew{
+				ID:       5,
+				Name:     "Brew5",
+				Comments: "Comments5",
+				Location: "Location5",
+				Ingridients: []models.BrewIngridient{
+					models.BrewIngridient{
+						ID:           1,
+						Quantity:     100,
+						IngridientID: 1,
+						Ingridient: models.Ingridient{
+							ID:       1,
+							Name:     "Ingridient1",
+							Comments: "Comments1",
+						},
+					},
+					models.BrewIngridient{
+						ID:           2,
+						Quantity:     200,
+						IngridientID: 2,
+						Ingridient: models.Ingridient{
+							ID:       2,
+							Name:     "Ingridient2",
+							Comments: "Comments2",
+						},
+					},
+				},
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -57,24 +85,7 @@ func TestBrewHandler_GetBrew(t *testing.T) {
 				if err != nil {
 					t.Errorf("Cannot decode api response")
 				}
-				expectedName := "Brew" + strconv.Itoa(tt.args.brewID)
-				expectedLocation := "Location" + strconv.Itoa(tt.args.brewID)
-				expectedComments := "Comments" + strconv.Itoa(tt.args.brewID)
-				if b.Name != expectedName {
-					expectMsg(t, expectedName, b.Name)
-				}
-				if b.Location != expectedLocation {
-					expectMsg(t, expectedLocation, b.Location)
-				}
-				if b.Comments != expectedComments {
-					expectMsg(t, expectedComments, b.Comments)
-				}
-				if len(b.Ingridients) != tt.args.howManyIngridients {
-					expectMsg(t, " no ingridients", strconv.Itoa(len(b.Ingridients))+" ingridients")
-				}
-				if b.Ingridients[0].Ingridient.Name != "Ingridient1" {
-					t.Errorf("First ingridient should have name Ingridrient1. Got: %v", b.Ingridients[0].Ingridient.Name)
-				}
+				brewEquals(t, tt.wantBrew, b)
 			}
 		})
 	}
@@ -115,6 +126,7 @@ func TestBrewHandler_AddBrew(t *testing.T) {
 			},
 			wantCode: http.StatusCreated,
 			wantBrew: models.Brew{
+				ID:       1,
 				Name:     "TestBrew",
 				Location: "TestLocation",
 				Comments: "TestComments",
@@ -137,15 +149,7 @@ func TestBrewHandler_AddBrew(t *testing.T) {
 				if err != nil {
 					t.Errorf("Cannot decode api response")
 				}
-				if b.Name != tt.wantBrew.Name {
-					expectMsg(t, tt.wantBrew.Name, b.Name)
-				}
-				if b.Comments != tt.wantBrew.Comments {
-					expectMsg(t, tt.wantBrew.Comments, b.Comments)
-				}
-				if b.Location != tt.wantBrew.Location {
-					expectMsg(t, tt.wantBrew.Location, b.Location)
-				}
+				brewEquals(t, tt.wantBrew, b)
 			}
 		})
 	}
@@ -219,9 +223,11 @@ func TestBrewHandler_UpdateBrew(t *testing.T) {
 			},
 			wantCode: http.StatusOK,
 			brewUpdated: models.Brew{
-				Name:     "NameUpdated",
-				Comments: "CommentsUpdated",
-				Location: "LocationUpdated",
+				ID:          3,
+				Name:        "NameUpdated",
+				Comments:    "CommentsUpdated",
+				Location:    "LocationUpdated",
+				Ingridients: []models.BrewIngridient{},
 			},
 		}, {
 			name: "Should return 200 code and brew data with updated only 2 fields",
@@ -231,9 +237,11 @@ func TestBrewHandler_UpdateBrew(t *testing.T) {
 			},
 			wantCode: http.StatusOK,
 			brewUpdated: models.Brew{
-				Name:     "Brew4",
-				Comments: "CommentsUpdated",
-				Location: "LocationUpdated",
+				ID:          4,
+				Name:        "Brew4",
+				Comments:    "CommentsUpdated",
+				Location:    "LocationUpdated",
+				Ingridients: []models.BrewIngridient{},
 			},
 		},
 	}
@@ -254,15 +262,7 @@ func TestBrewHandler_UpdateBrew(t *testing.T) {
 				if err != nil {
 					t.Errorf("Cannot decode api response")
 				}
-				if b.Name != tt.brewUpdated.Name {
-					expectMsg(t, tt.brewUpdated.Name, b.Name)
-				}
-				if b.Comments != tt.brewUpdated.Comments {
-					expectMsg(t, tt.brewUpdated.Comments, b.Comments)
-				}
-				if b.Location != tt.brewUpdated.Location {
-					expectMsg(t, tt.brewUpdated.Location, b.Location)
-				}
+				brewEquals(t, tt.brewUpdated, b)
 			}
 		})
 	}
