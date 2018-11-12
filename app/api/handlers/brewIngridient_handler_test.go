@@ -82,9 +82,6 @@ func TestBrewIngridientHandler_AddBrewIngridient(t *testing.T) {
 				if err != nil {
 					t.Errorf("Cannot decode api response")
 				}
-				if i.BrewID != 2 {
-					t.Errorf("Created BrewIngridient should have BrewID 2. Got: %v", i.BrewID)
-				}
 				if i.Quantity != 100 {
 					t.Errorf("Created BrewIngridient should have quantity 200. Got %v", i.Quantity)
 				}
@@ -154,9 +151,6 @@ func TestBrewIngridientHandler_GetBrewIngridient(t *testing.T) {
 				err = decoder.Decode(&i)
 				if i.IngridientID != tt.wantBrewIngridient.IngridientID {
 					t.Errorf("BrewIngridient should have IngridientID equals to %v. Got: %v", tt.wantBrewIngridient.IngridientID, i.IngridientID)
-				}
-				if i.BrewID != tt.wantBrewIngridient.BrewID {
-					t.Errorf("BrewIngridient should have BrewID equals to %v. Got: %v", tt.wantBrewIngridient.BrewID, i.BrewID)
 				}
 				if i.Quantity != tt.wantBrewIngridient.Quantity {
 					t.Errorf("BrewIngridient should have quantity equal to %v. Got: %v", tt.wantBrewIngridient.Quantity, i.Quantity)
@@ -268,9 +262,6 @@ func TestBrewIngridientHandler_UpdateBrewIngridient(t *testing.T) {
 				err = decoder.Decode(&i)
 				if i.IngridientID != tt.wantBrewIngridient.IngridientID {
 					t.Errorf("BrewIngridient should have IngridientID equals to %v. Got: %v", tt.wantBrewIngridient.IngridientID, i.IngridientID)
-				}
-				if i.BrewID != tt.wantBrewIngridient.BrewID {
-					t.Errorf("BrewIngridient should have BrewID equals to %v. Got: %v", tt.wantBrewIngridient.BrewID, i.BrewID)
 				}
 				if i.Quantity != tt.wantBrewIngridient.Quantity {
 					t.Errorf("BrewIngridient should have quantity equal to %v. Got: %v", tt.wantBrewIngridient.Quantity, i.Quantity)

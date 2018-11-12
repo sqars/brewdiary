@@ -8,22 +8,18 @@ import (
 
 // BrewIngridient - struct model for brew ingridient
 type BrewIngridient struct {
-	ID           int       `json:"id" gorm:"primary_key;AUTO_INCREMENT"`
-	CreatedAt    time.Time `json:"createdAt"`
-	UpdatedAt    time.Time `json:"updatedAt"`
-	Quantity     int       `json:"quantity" gorm:"NOT_NULL"`
-	BrewID       int
+	ID           int        `json:"id" gorm:"primary_key;AUTO_INCREMENT"`
+	CreatedAt    time.Time  `json:"createdAt"`
+	UpdatedAt    time.Time  `json:"updatedAt"`
+	Quantity     int        `json:"quantity" gorm:"NOT_NULL"`
+	BrewID       int        `json:"-"`
 	Ingridient   Ingridient `json:"ingridient" gorm:"foreignkey:IngridientID"`
 	IngridientID int        `json:"ingridientId"`
 }
 
 // Get returns brew ingridient from db
 func (b *BrewIngridient) Get(db *gorm.DB) error {
-	err := db.Where("brew_ID = ? AND ID = ?", b.BrewID, b.ID).First(b).Error
-	if err != nil {
-		return err
-	}
-	err = db.Model(b).Related(&b.Ingridient, "Ingridient").Error
+	err := db.Preload("Ingridient").Where("brew_ID = ? AND ID = ?", b.BrewID, b.ID).First(b).Error
 	return err
 }
 
