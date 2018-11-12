@@ -12,7 +12,6 @@ type Ingridient struct {
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 	Name      string    `json:"name" gorm:"UNIQUE;NOT NULL"`
-	Quantity  int       `json:"quantity"`
 	Comments  string    `json:"comments"`
 }
 
@@ -38,7 +37,6 @@ func (i *Ingridient) Delete(db *gorm.DB) error {
 func (i *Ingridient) Update(db *gorm.DB) error {
 	err := db.Model(&i).Updates(Ingridient{
 		Name:     i.Name,
-		Quantity: i.Quantity,
 		Comments: i.Comments,
 	}).Error
 	return err
@@ -52,4 +50,12 @@ func (i *Ingridient) GetAll(db *gorm.DB) ([]Ingridient, error) {
 		return nil, err
 	}
 	return ingridients, nil
+}
+
+// OK validates if ingridient valeus are correct
+func (i *Ingridient) OK() error {
+	if len(i.Name) == 0 {
+		return ErrMissingField("name")
+	}
+	return nil
 }

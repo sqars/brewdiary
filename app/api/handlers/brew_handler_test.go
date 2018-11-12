@@ -16,9 +16,10 @@ func addTestBrew(count int) {
 	}
 	for i := 0; i < count; i++ {
 		b := models.Brew{
-			Name:     "Brew" + strconv.Itoa(i+1),
-			Location: "Location" + strconv.Itoa(i+1),
-			Comments: "Comments" + strconv.Itoa(i+1),
+			Name:        "Brew" + strconv.Itoa(i+1),
+			Location:    "Location" + strconv.Itoa(i+1),
+			Comments:    "Comments" + strconv.Itoa(i+1),
+			Ingridients: []models.BrewIngridient{},
 		}
 		a.DB.Create(&b)
 	}
@@ -79,6 +80,9 @@ func TestBrewHandler_GetBrew(t *testing.T) {
 				}
 				if b.Comments != expectedComments {
 					expectMsg(t, expectedComments, b.Comments)
+				}
+				if len(b.Ingridients) != 0 {
+					expectMsg(t, " no ingridients", strconv.Itoa(len(b.Ingridients))+" ingridients")
 				}
 			}
 		})

@@ -8,12 +8,13 @@ import (
 
 // Brew - struct model for brew
 type Brew struct {
-	ID        int       `json:"id" gorm:"primary_key;AUTO_INCREMENT"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
-	Name      string    `json:"name" gorm:"UNIQUE;NOT NULL"`
-	Location  string    `json:"location"`
-	Comments  string    `json:"comments"`
+	ID          int              `json:"id" gorm:"primary_key;AUTO_INCREMENT"`
+	CreatedAt   time.Time        `json:"createdAt"`
+	UpdatedAt   time.Time        `json:"updatedAt"`
+	Name        string           `json:"name" gorm:"UNIQUE;NOT NULL"`
+	Location    string           `json:"location"`
+	Comments    string           `json:"comments"`
+	Ingridients []BrewIngridient `json:"ingridients"`
 }
 
 // Get returns brew from db
@@ -37,9 +38,10 @@ func (b *Brew) Delete(db *gorm.DB) error {
 // Update updates brew in db
 func (b *Brew) Update(db *gorm.DB) error {
 	err := db.Model(&b).Updates(Brew{
-		Name:     b.Name,
-		Location: b.Location,
-		Comments: b.Comments,
+		Name:        b.Name,
+		Location:    b.Location,
+		Comments:    b.Comments,
+		Ingridients: b.Ingridients,
 	}).Error
 	return err
 }
@@ -52,4 +54,12 @@ func (b *Brew) GetAll(db *gorm.DB) ([]Brew, error) {
 		return nil, err
 	}
 	return brews, nil
+}
+
+// OK validates if brew valeus are correct
+func (b *Brew) OK() error {
+	if len(b.Name) == 0 {
+		return ErrMissingField("name")
+	}
+	return nil
 }

@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 
@@ -27,13 +26,9 @@ type IngridientHandler struct {
 func (i *IngridientHandler) AddIngridient(w http.ResponseWriter, r *http.Request) {
 	tx := i.DB.Begin()
 	ingridient := models.Ingridient{}
-	err := decodeJSON(r, &ingridient)
+	err := decodeJSON(r, &ingridient, true)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
-		return
-	}
-	if ingridient.Quantity < 0 {
-		http.Error(w, errors.New("Quantity must be value higher than 0").Error(), http.StatusUnprocessableEntity)
 		return
 	}
 	err = ingridient.Create(i.DB)
@@ -88,13 +83,9 @@ func (i *IngridientHandler) UpdateIngridient(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	ingridient := models.Ingridient{}
-	err = decodeJSON(r, &ingridient)
+	err = decodeJSON(r, &ingridient, false)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
-		return
-	}
-	if ingridient.Quantity < 0 {
-		http.Error(w, errors.New("Quantity must be value higher than 0").Error(), http.StatusUnprocessableEntity)
 		return
 	}
 	ingridient.ID = id

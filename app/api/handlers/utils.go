@@ -5,6 +5,10 @@ import (
 	"net/http"
 )
 
+type ok interface {
+	OK() error
+}
+
 // ResponseJSON returns response as JSON with passed payload
 func responseJSON(w http.ResponseWriter, status int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
@@ -15,8 +19,15 @@ func responseJSON(w http.ResponseWriter, status int, payload interface{}) {
 }
 
 // DecodeJSON decodes JSON request
-func decodeJSON(r *http.Request, v interface{}) error {
+func decodeJSON(r *http.Request, v ok, validate bool) error {
 	decoder := json.NewDecoder(r.Body)
 	defer r.Body.Close()
-	return decoder.Decode(&v)
+	err := decoder.Decode(&v)
+	if err != nil {
+		return err
+	}
+	if validate {
+		return v.OK()
+	}
+	return nil
 }

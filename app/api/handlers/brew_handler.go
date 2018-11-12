@@ -27,7 +27,7 @@ type BrewHandler struct {
 func (b *BrewHandler) AddBrew(w http.ResponseWriter, r *http.Request) {
 	tx := b.DB.Begin()
 	brew := models.Brew{}
-	err := decodeJSON(r, &brew)
+	err := decodeJSON(r, &brew, true)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return
@@ -84,7 +84,7 @@ func (b *BrewHandler) UpdateBrew(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	brew := models.Brew{}
-	err = decodeJSON(r, &brew)
+	err = decodeJSON(r, &brew, false)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 		return

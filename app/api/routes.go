@@ -10,6 +10,7 @@ import (
 // Init initialize api and register app routes
 func Init(db *gorm.DB) *mux.Router {
 	brewHandler := handlers.NewBrewHandler(db)
+	brewIngridientHandler := handlers.NewBrewIngridientHandler(db)
 	ingridientHandler := handlers.NewIngridientHandler(db)
 	r := mux.NewRouter()
 
@@ -19,6 +20,8 @@ func Init(db *gorm.DB) *mux.Router {
 	r.HandleFunc("/brew", brewHandler.AddBrew).Methods("POST")
 	r.HandleFunc("/brew/{id:[0-9]+}", brewHandler.DeleteBrew).Methods("DELETE")
 	r.HandleFunc("/brew/{id:[0-9]+}", brewHandler.UpdateBrew).Methods("PATCH")
+	// brew ingridient routes
+	r.HandleFunc("/brew/{id:[0-9]+}/ingr", brewIngridientHandler.AddBrewIngridient).Methods("POST")
 
 	// ingridient specific routes
 	r.HandleFunc("/ingr", ingridientHandler.GetIngridients).Methods("GET")

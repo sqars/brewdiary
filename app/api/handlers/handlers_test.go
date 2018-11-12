@@ -28,6 +28,7 @@ func TestMain(m *testing.M) {
 
 	clearBrewTable()
 	clearIngridientTable()
+	clearBrewIngridientTable()
 	code := m.Run()
 
 	os.Exit(code)
@@ -58,4 +59,9 @@ func clearBrewTable() {
 func clearIngridientTable() {
 	a.DB.DropTableIfExists(&models.Ingridient{})
 	a.DB.AutoMigrate(&models.Ingridient{})
+}
+
+func clearBrewIngridientTable() {
+	a.DB.DropTableIfExists(&models.BrewIngridient{})
+	a.DB.AutoMigrate(&models.BrewIngridient{})
 }

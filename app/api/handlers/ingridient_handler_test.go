@@ -17,7 +17,6 @@ func addTestIngridient(count int) {
 	for i := 0; i < count; i++ {
 		in := models.Ingridient{
 			Name:     "Ingridient" + strconv.Itoa(i+1),
-			Quantity: i * 100,
 			Comments: "Comments" + strconv.Itoa(i+1),
 		}
 		a.DB.Create(&in)
@@ -69,13 +68,9 @@ func TestIngridientHandler_GetIngridient(t *testing.T) {
 					t.Errorf("Cannot decode api response")
 				}
 				expectedName := "Ingridient" + strconv.Itoa(tt.args.IID)
-				expectedQty := (tt.args.IID - 1) * 100
 				expectedComments := "Comments" + strconv.Itoa(tt.args.IID)
 				if i.Name != expectedName {
 					expectMsg(t, expectedName, i.Name)
-				}
-				if i.Quantity != expectedQty {
-					expectMsg(t, "quantity "+strconv.Itoa(expectedQty), "quantity "+strconv.Itoa(i.Quantity))
 				}
 				if i.Comments != expectedComments {
 					expectMsg(t, expectedComments, i.Comments)
@@ -110,24 +105,17 @@ func TestIngridient_AddIngridient(t *testing.T) {
 		}, {
 			name: "Should return 422 if nothing passed wrong data types in fields",
 			args: args{
-				payload: []byte(`"name":"123","quantity":"wtf"`),
-			},
-			wantCode: http.StatusUnprocessableEntity,
-		}, {
-			name: "Should return 422 if payload have quantity less than 0",
-			args: args{
-				payload: []byte(`{"name":"TestIngridient","quantity":-50,"comments":"TestComments"}`),
+				payload: []byte(`"name":"123"`),
 			},
 			wantCode: http.StatusUnprocessableEntity,
 		}, {
 			name: "Should return 201 if Ingridient was created with proper payload",
 			args: args{
-				payload: []byte(`{"name":"TestIngridient","quantity":50,"comments":"TestComments"}`),
+				payload: []byte(`{"name":"TestIngridient","comments":"TestComments"}`),
 			},
 			wantCode: http.StatusCreated,
 			wantIngr: models.Ingridient{
 				Name:     "TestIngridient",
-				Quantity: 50,
 				Comments: "TestComments",
 			},
 		},
@@ -153,9 +141,6 @@ func TestIngridient_AddIngridient(t *testing.T) {
 				}
 				if i.Comments != tt.wantIngr.Comments {
 					expectMsg(t, tt.wantIngr.Comments, i.Comments)
-				}
-				if i.Quantity != tt.wantIngr.Quantity {
-					expectMsg(t, "quantity "+strconv.Itoa(tt.wantIngr.Quantity), "quantity "+strconv.Itoa(i.Quantity))
 				}
 			}
 		})
@@ -223,34 +208,25 @@ func TestIngridient_UpdateIngridient(t *testing.T) {
 			},
 			wantCode: http.StatusUnprocessableEntity,
 		}, {
-			name: "Should return 422 code if updating quantity with value less than 0",
-			args: args{
-				url:     "/ingr/3",
-				payload: []byte(`{"quantity": -40}`),
-			},
-			wantCode: http.StatusUnprocessableEntity,
-		}, {
 			name: "Should return 200 code and User data when updated",
 			args: args{
 				url:     "/ingr/3",
-				payload: []byte(`{"name": "NameUpdated","comments": "CommentsUpdated","quantity":50}`),
+				payload: []byte(`{"name": "NameUpdated","comments": "CommentsUpdated"}`),
 			},
 			wantCode: http.StatusOK,
 			ingridientUpdated: models.Ingridient{
 				Name:     "NameUpdated",
 				Comments: "CommentsUpdated",
-				Quantity: 50,
 			},
 		}, {
-			name: "Should return 200 code and User data with updated only 2 fields",
+			name: "Should return 200 code and User data with updated only 1 fields",
 			args: args{
 				url:     "/ingr/4",
-				payload: []byte(`{"comments": "CommentsUpdated","quantity":20}`),
+				payload: []byte(`{"comments": "CommentsUpdated"}`),
 			},
 			wantCode: http.StatusOK,
 			ingridientUpdated: models.Ingridient{
 				Name:     "Ingridient4",
-				Quantity: 20,
 				Comments: "CommentsUpdated",
 			},
 		},
@@ -277,9 +253,6 @@ func TestIngridient_UpdateIngridient(t *testing.T) {
 				}
 				if i.Comments != tt.ingridientUpdated.Comments {
 					expectMsg(t, tt.ingridientUpdated.Comments, i.Comments)
-				}
-				if i.Quantity != tt.ingridientUpdated.Quantity {
-					expectMsg(t, "quantity "+strconv.Itoa(tt.ingridientUpdated.Quantity), "quantity "+strconv.Itoa(i.Quantity))
 				}
 			}
 		})
