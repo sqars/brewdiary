@@ -20,6 +20,10 @@ type Brew struct {
 // Get returns brew from db
 func (b *Brew) Get(db *gorm.DB) error {
 	err := db.Find(b, b.ID).Error
+	if err != nil {
+		return err
+	}
+	err = db.Model(b).Related(&b.Ingridients, "Ingridients").Error
 	return err
 }
 

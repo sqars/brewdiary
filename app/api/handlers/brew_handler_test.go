@@ -10,25 +10,11 @@ import (
 	"github.com/sqars/brewdiary/app/models"
 )
 
-func addTestBrew(count int) {
-	if count < 1 {
-		count = 1
-	}
-	for i := 0; i < count; i++ {
-		b := models.Brew{
-			Name:        "Brew" + strconv.Itoa(i+1),
-			Location:    "Location" + strconv.Itoa(i+1),
-			Comments:    "Comments" + strconv.Itoa(i+1),
-			Ingridients: []models.BrewIngridient{},
-		}
-		a.DB.Create(&b)
-	}
-}
-
 func TestBrewHandler_GetBrew(t *testing.T) {
 	type args struct {
-		url    string
-		brewID int
+		url                string
+		brewID             int
+		howManyIngridients int
 	}
 	tests := []struct {
 		name     string
@@ -44,8 +30,9 @@ func TestBrewHandler_GetBrew(t *testing.T) {
 		}, {
 			name: "Should return 200 and Brew data",
 			args: args{
-				url:    "/brew/5",
-				brewID: 5,
+				url:                "/brew/5",
+				brewID:             5,
+				howManyIngridients: 3,
 			},
 			wantCode: http.StatusOK,
 		},
@@ -55,6 +42,7 @@ func TestBrewHandler_GetBrew(t *testing.T) {
 			clearBrewTable()
 			if tt.wantCode == http.StatusOK {
 				addTestBrew(tt.args.brewID + 1)
+				addTestBrewIngridient(tt.args.brewID, tt.args.howManyIngridients)
 			}
 			req, err := http.NewRequest("GET", tt.args.url, nil)
 			if err != nil {
@@ -81,7 +69,7 @@ func TestBrewHandler_GetBrew(t *testing.T) {
 				if b.Comments != expectedComments {
 					expectMsg(t, expectedComments, b.Comments)
 				}
-				if len(b.Ingridients) != 0 {
+				if len(b.Ingridients) != tt.args.howManyIngridients {
 					expectMsg(t, " no ingridients", strconv.Itoa(len(b.Ingridients))+" ingridients")
 				}
 			}

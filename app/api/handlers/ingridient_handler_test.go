@@ -10,19 +10,6 @@ import (
 	"github.com/sqars/brewdiary/app/models"
 )
 
-func addTestIngridient(count int) {
-	if count < 1 {
-		count = 1
-	}
-	for i := 0; i < count; i++ {
-		in := models.Ingridient{
-			Name:     "Ingridient" + strconv.Itoa(i+1),
-			Comments: "Comments" + strconv.Itoa(i+1),
-		}
-		a.DB.Create(&in)
-	}
-}
-
 func TestIngridientHandler_GetIngridient(t *testing.T) {
 	type args struct {
 		url string

@@ -19,7 +19,11 @@ type BrewIngridient struct {
 
 // Get returns brew ingridient from db
 func (b *BrewIngridient) Get(db *gorm.DB) error {
-	err := db.Find(b, b.ID).Error
+	err := db.Where("brew_ID = ? AND ID = ?", b.BrewID, b.ID).First(b).Error
+	if err != nil {
+		return err
+	}
+	err = db.Model(b).Related(&b.Ingridient, "Ingridient").Error
 	return err
 }
 
@@ -38,7 +42,8 @@ func (b *BrewIngridient) Delete(db *gorm.DB) error {
 // Update updates brew ingridient in db
 func (b *BrewIngridient) Update(db *gorm.DB) error {
 	err := db.Model(&b).Updates(BrewIngridient{
-		Quantity: b.Quantity,
+		Quantity:     b.Quantity,
+		IngridientID: b.IngridientID,
 	}).Error
 	return err
 }

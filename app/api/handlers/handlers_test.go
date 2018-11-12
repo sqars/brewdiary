@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/sqars/brewdiary/app"
@@ -51,6 +52,12 @@ func expectMsg(t *testing.T, expected, actual string) {
 	t.Errorf("Expected to have %s. Got %s", expected, actual)
 }
 
+func clearTables() {
+	clearBrewTable()
+	clearIngridientTable()
+	clearBrewIngridientTable()
+}
+
 func clearBrewTable() {
 	a.DB.DropTableIfExists(&models.Brew{})
 	a.DB.AutoMigrate(&models.Brew{})
@@ -64,4 +71,53 @@ func clearIngridientTable() {
 func clearBrewIngridientTable() {
 	a.DB.DropTableIfExists(&models.BrewIngridient{})
 	a.DB.AutoMigrate(&models.BrewIngridient{})
+}
+
+func addTestBrewIngridient(brewID, count int) {
+	if count < 1 {
+		count = 1
+	}
+	brew := models.Brew{}
+	brew.Get(a.DB)
+	ingridients := []models.BrewIngridient{}
+	addTestIngridient(count)
+	for i := 0; i < count; i++ {
+		brewIngridient := models.BrewIngridient{
+			Quantity:     (i + 1) * 100,
+			BrewID:       brewID,
+			IngridientID: i + 1,
+		}
+		brewIngridient.Create(a.DB)
+		ingridients = append(ingridients, brewIngridient)
+	}
+	brew.Ingridients = ingridients
+	brew.Update(a.DB)
+}
+
+func addTestBrew(count int) {
+	if count < 1 {
+		count = 1
+	}
+	for i := 0; i < count; i++ {
+		b := models.Brew{
+			Name:        "Brew" + strconv.Itoa(i+1),
+			Location:    "Location" + strconv.Itoa(i+1),
+			Comments:    "Comments" + strconv.Itoa(i+1),
+			Ingridients: []models.BrewIngridient{},
+		}
+		a.DB.Create(&b)
+	}
+}
+
+func addTestIngridient(count int) {
+	if count < 1 {
+		count = 1
+	}
+	for i := 0; i < count; i++ {
+		in := models.Ingridient{
+			Name:     "Ingridient" + strconv.Itoa(i+1),
+			Comments: "Comments" + strconv.Itoa(i+1),
+		}
+		a.DB.Create(&in)
+	}
 }

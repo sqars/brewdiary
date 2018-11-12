@@ -22,6 +22,9 @@ func Init(db *gorm.DB) *mux.Router {
 	r.HandleFunc("/brew/{id:[0-9]+}", brewHandler.UpdateBrew).Methods("PATCH")
 	// brew ingridient routes
 	r.HandleFunc("/brew/{id:[0-9]+}/ingr", brewIngridientHandler.AddBrewIngridient).Methods("POST")
+	r.HandleFunc("/brew/{id:[0-9]+}/ingr/{iid:[0-9]+}", brewIngridientHandler.GetBrewIngridient).Methods("GET")
+	r.HandleFunc("/brew/{id:[0-9]+}/ingr/{iid:[0-9]+}", brewIngridientHandler.DeleteBrewIngridient).Methods("DELETE")
+	r.HandleFunc("/brew/{id:[0-9]+}/ingr/{iid:[0-9]+}", brewIngridientHandler.UpdateBrewIngridient).Methods("PATCH")
 
 	// ingridient specific routes
 	r.HandleFunc("/ingr", ingridientHandler.GetIngridients).Methods("GET")
