@@ -72,6 +72,9 @@ func TestBrewHandler_GetBrew(t *testing.T) {
 				if len(b.Ingridients) != tt.args.howManyIngridients {
 					expectMsg(t, " no ingridients", strconv.Itoa(len(b.Ingridients))+" ingridients")
 				}
+				if b.Ingridients[0].Ingridient.Name != "Ingridient1" {
+					t.Errorf("First ingridient should have name Ingridrient1. Got: %v", b.Ingridients[0].Ingridient.Name)
+				}
 			}
 		})
 	}

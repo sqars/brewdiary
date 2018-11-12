@@ -19,11 +19,7 @@ type Brew struct {
 
 // Get returns brew from db
 func (b *Brew) Get(db *gorm.DB) error {
-	err := db.Find(b, b.ID).Error
-	if err != nil {
-		return err
-	}
-	err = db.Model(b).Related(&b.Ingridients, "Ingridients").Error
+	err := db.Preload("Ingridients.Ingridient").First(b, b.ID).Error
 	return err
 }
 
@@ -53,7 +49,7 @@ func (b *Brew) Update(db *gorm.DB) error {
 // GetAll returns all brews from db
 func (b *Brew) GetAll(db *gorm.DB) ([]Brew, error) {
 	brews := []Brew{}
-	err := db.Find(&brews).Error
+	err := db.Preload("Ingridients.Ingridient").Find(&brews).Error
 	if err != nil {
 		return nil, err
 	}

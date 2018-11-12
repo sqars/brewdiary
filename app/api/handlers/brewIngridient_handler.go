@@ -11,6 +11,7 @@ import (
 
 // NewBrewIngridientHandler is function constructor for BrewIngridient Handler
 func NewBrewIngridientHandler(db *gorm.DB) *BrewIngridientHandler {
+	db.DropTableIfExists(&models.BrewIngridient{})
 	db.AutoMigrate(&models.BrewIngridient{})
 	return &BrewIngridientHandler{DB: db}
 }

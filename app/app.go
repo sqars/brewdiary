@@ -54,7 +54,6 @@ func (a *App) connectDB() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	db.Set("gorm:auto_preload", true)
 	a.DB = db
 
 	a.DB.LogMode(a.Config.Debug)

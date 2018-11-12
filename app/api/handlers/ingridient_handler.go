@@ -13,6 +13,7 @@ import (
 
 // NewIngridientHandler is function constructor for Ingridient Handler
 func NewIngridientHandler(db *gorm.DB) *IngridientHandler {
+	db.DropTableIfExists(&models.Ingridient{})
 	db.AutoMigrate(&models.Ingridient{})
 	return &IngridientHandler{DB: db}
 }

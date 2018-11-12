@@ -8,11 +8,11 @@ import (
 
 // BrewIngridient - struct model for brew ingridient
 type BrewIngridient struct {
-	ID           int        `json:"id" gorm:"primary_key;AUTO_INCREMENT"`
-	CreatedAt    time.Time  `json:"createdAt"`
-	UpdatedAt    time.Time  `json:"updatedAt"`
-	Quantity     int        `json:"quantity" gorm:"NOT_NULL"`
-	BrewID       int        `json:"brewId"`
+	ID           int       `json:"id" gorm:"primary_key;AUTO_INCREMENT"`
+	CreatedAt    time.Time `json:"createdAt"`
+	UpdatedAt    time.Time `json:"updatedAt"`
+	Quantity     int       `json:"quantity" gorm:"NOT_NULL"`
+	BrewID       int
 	Ingridient   Ingridient `json:"ingridient" gorm:"foreignkey:IngridientID"`
 	IngridientID int        `json:"ingridientId"`
 }
